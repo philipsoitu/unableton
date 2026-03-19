@@ -24,7 +24,7 @@ pub const Audio = struct {
         try self.tracks.append(self.allocator, track);
     }
 
-    pub fn saveWAV(self: *@This(), filename: []const u8) !void {
+    pub fn saveWAV(self: *@This(), allocator: std.mem.Allocator, filename: []const u8) !void {
         const file = try std.fs.cwd().createFile(
             filename,
             .{ .read = true },
@@ -53,12 +53,20 @@ pub const Audio = struct {
         _ = try file.write("data");
         try file_write_int(file, u32, num_samples * @sizeOf(u16));
 
+        // init SampleData
+        const buff = try allocator.alloc(i16, num_samples);
         for (0..num_samples) |i| {
-            const t = @as(f32, @floatFromInt(i)) / @as(f32, @floatFromInt(self.frequency));
-            const y = @sin(t * 400.0 * 2 * 3.141592);
-            const sample = @as(i16, @intFromFloat(y * std.math.maxInt(i16)));
-            std.debug.print("{}: {}\n", .{ t, sample });
-            try file_write_int(file, i16, sample);
+            buff[i] = 0;
+        }
+
+        for (self.tracks.items) |track| {
+            for (0..track.sample_data.len) |i| {
+                buff[i + track.start] = track.sample_data[i];
+            }
+        }
+
+        for (0..num_samples) |i| {
+            try file_write_int(file, i16, buff[i]);
         }
     }
 };
