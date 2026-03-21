@@ -1,10 +1,10 @@
 const std = @import("std");
-const Track = @import("track.zig").Track;
+const Clip = @import("clip.zig").Clip;
 
 pub const AudioProject = struct {
     frequency: u32,
     duration: u32,
-    tracks: std.ArrayList(*Track),
+    tracks: std.ArrayList(*Clip),
 
     pub fn init(frequency: u32, duration: u32) !@This() {
         return @This(){
@@ -18,7 +18,7 @@ pub const AudioProject = struct {
         self.tracks.deinit(allocator);
     }
 
-    pub fn addTrack(self: *@This(), allocator: std.mem.Allocator, track: *Track) !void {
+    pub fn addTrack(self: *@This(), allocator: std.mem.Allocator, track: *Clip) !void {
         try self.tracks.append(allocator, track);
     }
 
