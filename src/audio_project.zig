@@ -1,27 +1,25 @@
 const std = @import("std");
 const Track = @import("track.zig").Track;
 
-pub const Audio = struct {
-    allocator: std.mem.Allocator,
+pub const AudioProject = struct {
     frequency: u32,
     duration: u32,
     tracks: std.ArrayList(*Track),
 
-    pub fn init(allocator: std.mem.Allocator, frequency: u32, duration: u32) !@This() {
+    pub fn init(frequency: u32, duration: u32) !@This() {
         return @This(){
-            .allocator = allocator,
             .frequency = frequency,
             .duration = duration,
             .tracks = .empty,
         };
     }
 
-    pub fn deinit(self: *@This()) void {
-        self.tracks.deinit(self.allocator);
+    pub fn deinit(self: *@This(), allocator: std.mem.Allocator) void {
+        self.tracks.deinit(allocator);
     }
 
-    pub fn addTrack(self: *@This(), track: *Track) !void {
-        try self.tracks.append(self.allocator, track);
+    pub fn addTrack(self: *@This(), allocator: std.mem.Allocator, track: *Track) !void {
+        try self.tracks.append(allocator, track);
     }
 
     pub fn saveWAV(self: *@This(), allocator: std.mem.Allocator, filename: []const u8) !void {
