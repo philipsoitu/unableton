@@ -53,21 +53,36 @@ pub const AudioProject = struct {
         try file_write_int(file, u32, num_samples * @sizeOf(u16));
 
         // init SampleData
-        const buff = try allocator.alloc(i16, num_samples);
+        const buff = try allocator.alloc(f32, num_samples);
         for (0..num_samples) |i| {
             buff[i] = 0;
         }
 
         for (self.tracks.items) |track| {
             for (track.clips.items) |clip| {
-                for (0..clip.sample_data.len) |i| {
-                    buff[i + clip.start] = clip.sample_data[i];
+                for (0..clip.duration) |i| {
+                    buff[i + clip.track_start] += clip.sample_data.samples[i + clip.sample_start];
                 }
             }
         }
 
+        // normalize
+        var peak: f32 = 0.0;
+        for (buff) |s| {
+            const a = @abs(s);
+            if (a > peak) peak = a;
+        }
+        if (peak > 1.0) {
+            const gain = 1.0 / peak;
+            for (buff) |*s| s.* *= gain;
+        }
+
+        // write samples
         for (0..num_samples) |i| {
-            try file_write_int(file, i16, buff[i]);
+            const clamped = std.math.clamp(buff[i], -1.0, 1.0);
+            const scaled = clamped * 32767.0;
+            const sample: i16 = @intFromFloat(@round(scaled));
+            try file_write_int(file, i16, sample);
         }
     }
 };

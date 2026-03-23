@@ -63,16 +63,18 @@ pub const AudioBuffer = struct {
                 switch (bits_per_sample) {
                     16 => {
                         for (0..data_size / 2) |i| {
+                            const scale: f32 = @as(f32, @floatFromInt(std.math.maxInt(i16))) + 1.0;
                             const sample_bytes = wav_bytes[44 + i * 2 .. 44 + (i + 1) * 2];
                             const sample_int = std.mem.readInt(i16, sample_bytes[0..2], .little);
-                            samples[i] = @floatFromInt(sample_int);
+                            samples[i] = @as(f32, @floatFromInt(sample_int)) / scale;
                         }
                     },
                     24 => {
                         for (0..data_size / 3) |i| {
+                            const scale: f32 = @as(f32, @floatFromInt(std.math.maxInt(i24))) + 1.0;
                             const sample_bytes = wav_bytes[44 + i * 3 .. 44 + (i + 1) * 3];
                             const sample_int = std.mem.readInt(i24, sample_bytes[0..3], .little);
-                            samples[i] = @floatFromInt(sample_int);
+                            samples[i] = @as(f32, @floatFromInt(sample_int)) / scale;
                         }
                     },
                     else => return error.UnsupportedBitsPerSample,

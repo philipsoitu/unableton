@@ -1,5 +1,6 @@
 const std = @import("std");
 const AudioProject = @import("audio_project.zig").AudioProject;
+const AudioBuffer = @import("audio_buffer.zig").AudioBuffer;
 const Track = @import("track.zig").Track;
 const Clip = @import("clip.zig").Clip;
 const makeSineClip = @import("clip.zig").makeSineClip;
@@ -14,25 +15,28 @@ pub fn main() !void {
     defer track0.deinit(allocator);
     try audio.addTrack(allocator, &track0);
 
-    var clip0 = try makeSineClip(
-        allocator,
-        0,
-        3 * 44100,
-        44100,
-        400.0,
-    );
-    defer clip0.deinit(allocator);
-    try track0.addClip(allocator, &clip0);
+    var buf = try AudioBuffer.initFromWav(allocator, "out/car-horn.wav");
+    defer buf.deinit(allocator);
 
-    var clip1 = try makeSineClip(
-        allocator,
-        44100,
-        2 * 44100,
-        44100,
-        500.0,
-    );
-    defer clip1.deinit(allocator);
+    var buf1 = try AudioBuffer.initFromWav(allocator, "out/test.wav");
+    defer buf1.deinit(allocator);
+
+    var clip = Clip{
+        .sample_start = 44100 * 1,
+        .track_start = 44100 * 2,
+        .duration = 44100 * 1,
+        .sample_data = &buf,
+    };
+
+    var clip1 = Clip{
+        .sample_start = 44100 * 0,
+        .track_start = 44100 * 0,
+        .duration = 44100 * 3,
+        .sample_data = &buf1,
+    };
+
+    try track0.addClip(allocator, &clip);
     try track0.addClip(allocator, &clip1);
 
-    try audio.saveWAV(allocator, "out/test.wav");
+    try audio.saveWAV(allocator, "out/test2.wav");
 }
