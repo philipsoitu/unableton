@@ -97,3 +97,24 @@ pub const AudioBuffer = struct {
         allocator.free(self.samples);
     }
 };
+
+pub fn makeSineBuffer(
+    allocator: std.mem.Allocator,
+    duration: u32,
+    sample_rate: u32,
+    frequency: f32,
+) !AudioBuffer {
+    const sample_data = try allocator.alloc(f32, duration);
+
+    for (0..duration) |i| {
+        const t = @as(f32, @floatFromInt(i)) / @as(f32, @floatFromInt(sample_rate));
+        const y = @sin(t * frequency * 2.0 * std.math.pi);
+        sample_data[i] = y;
+    }
+
+    return .{
+        .filepath = undefined,
+        .metadata = undefined,
+        .samples = sample_data,
+    };
+}

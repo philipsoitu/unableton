@@ -3,7 +3,7 @@ const AudioProject = @import("audio_project.zig").AudioProject;
 const AudioBuffer = @import("audio_buffer.zig").AudioBuffer;
 const Track = @import("track.zig").Track;
 const Clip = @import("clip.zig").Clip;
-const makeSineClip = @import("clip.zig").makeSineClip;
+const makeSineBuffer = @import("audio_buffer.zig").makeSineBuffer;
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
@@ -21,10 +21,13 @@ pub fn main() !void {
     var buf1 = try AudioBuffer.initFromWav(allocator, "out/test.wav");
     defer buf1.deinit(allocator);
 
+    var buf2 = try makeSineBuffer(allocator, 44100 * 3, 44100, 440);
+    defer buf2.deinit(allocator);
+
     var clip = Clip{
         .sample_start = 44100 * 1,
-        .track_start = 44100 * 2,
-        .duration = 44100 * 1,
+        .track_start = 44100 * 1,
+        .duration = 44100 * 2,
         .sample_data = &buf,
     };
 
@@ -35,8 +38,16 @@ pub fn main() !void {
         .sample_data = &buf1,
     };
 
+    var clip2 = Clip{
+        .sample_start = 44100 * 0,
+        .track_start = 44100 * 0,
+        .duration = 44100 * 3,
+        .sample_data = &buf2,
+    };
+
     try track0.addClip(allocator, &clip);
     try track0.addClip(allocator, &clip1);
+    try track0.addClip(allocator, &clip2);
 
     try audio.saveWAV(allocator, "out/test2.wav");
 }
