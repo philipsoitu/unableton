@@ -118,3 +118,27 @@ pub fn makeSineBuffer(
         .samples = sample_data,
     };
 }
+
+pub fn makeSquareBuffer(
+    allocator: std.mem.Allocator,
+    duration: u32,
+    sample_rate: u32,
+    frequency: u32,
+    intensity: f32,
+) !AudioBuffer {
+    const sample_data = try allocator.alloc(f32, duration);
+
+    const rate_of_change = sample_rate / frequency;
+
+    for (0..duration) |i| {
+        const b = (i / rate_of_change % 2 == 0);
+        const k: f32 = if (b) 1.0 else -1.0;
+        sample_data[i] = k * intensity;
+    }
+
+    return .{
+        .filepath = undefined,
+        .metadata = undefined,
+        .samples = sample_data,
+    };
+}
