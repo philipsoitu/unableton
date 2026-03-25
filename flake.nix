@@ -21,6 +21,10 @@
         devShells.default = pkgs.mkShell {
           buildInputs = [
             pkgs.zig
+            pkgs.raylib
+            pkgs.raygui
+            pkgs.pkg-config
+
             pkgs.vlc
           ];
         };
