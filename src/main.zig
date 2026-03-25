@@ -23,6 +23,7 @@ pub fn main() !void {
     var show_text = false;
 
     while (!c.WindowShouldClose()) {
+        c.SetMouseScale(1.0, 1.0);
         c.BeginDrawing();
         defer c.EndDrawing();
 
